@@ -204,7 +204,6 @@ func GetLineHasAll(dir, key string) ([]int64, []int){
 func UpdateLine(dir, key , newval string){
 	file := SRead(dir)
 	tokens := strings.Split(file, NewLine())
-	lennl := len(NewLine())
 	for i, v := range tokens{
 		if strings.Contains(v, key) {
 			tokens[i] = newval
