@@ -9,8 +9,6 @@ import (
 	"path/filepath"
 )
 
-
-
 func DelFile(dir string) {
 	_, filedir := SplitDir(dir)
 	err := os.RemoveAll(filedir)
