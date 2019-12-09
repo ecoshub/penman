@@ -224,3 +224,23 @@ func IsFileExist(file string) bool {
 	}
 	return true
 }
+
+func GetFileSize(dir string) int64{
+    info, err := os.Stat(dir)
+    if err != nil {
+        return int64(0)
+    }
+    return info.Size()
+}
+
+func GetFileName(dir string) string{
+    tokens := strings.Split(dir, Sep)
+    name := tokens[len(tokens) - 1]
+    return name
+}
+
+func GetFileExt(dir string) string{
+    tokens := strings.Split(dir, ".")
+    ext := strings.Join(tokens[1:], ".")
+    return ext
+}
