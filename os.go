@@ -234,7 +234,7 @@ func GetFileSize(dir string) int64{
 }
 
 func GetFileName(dir string) string{
-    tokens := strings.Split(dir, Sep)
+    tokens := strings.Split(dir, Sep())
     name := tokens[len(tokens) - 1]
     return name
 }
