@@ -74,7 +74,7 @@ func SRead(dir string) string{
 	return string(Read(dir))
 }
 
-func ReadAt(dir string, offset int64, length int) []byte {
+func ReadAt(dir string, offset int64, length int64) []byte {
 	dir = PreProcess(dir)
 	f, err := os.Open(dir)
 	if err != nil {
