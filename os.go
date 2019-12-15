@@ -190,7 +190,7 @@ func PreProcess(dir string) string {
 func SplitDir(dir string) (string, string){
 	dir = PreProcess(dir)
 	tokens := strings.Split(dir, Sep())
-	dirPart := strings.Join(tokens[:len(tokens) - 1], sp)
+	dirPart := strings.Join(tokens[:len(tokens) - 1], Sep())
 	return dirPart, dir
 }
 
