@@ -128,7 +128,6 @@ func MoveDir(olddir, newdir string) {
 }
 
 func Cd(dir string) string{
-	dir = PreProcess(dir)
 	tokens := strings.Split(dir , Sep())
 	tokens = tokens[:len(tokens) - 1]
 	newdir := strings.Join(tokens, Sep())
@@ -190,14 +189,12 @@ func PreProcess(dir string) string {
 
 func SplitDir(dir string) (string, string){
 	dir = PreProcess(dir)
-	sp := Sep()
-	tokens := strings.Split(dir, sp)
+	tokens := strings.Split(dir, Sep())
 	dirPart := strings.Join(tokens[:len(tokens) - 1], sp)
 	return dirPart, dir
 }
 
 func SplitName(dir string) string{
-	dir = PreProcess(dir)
 	sp := Sep()
 	tokens := strings.Split(dir, sp)
 	namePart := tokens[len(tokens) - 1]

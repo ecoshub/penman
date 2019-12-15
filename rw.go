@@ -60,6 +60,7 @@ func(r * ReadLine) Close(){
 }
 
 func Read(dir string) []byte{
+	dir = PreProcess(dir)
 	_, filedir := SplitDir(dir)
 	buff, err := ioutil.ReadFile(filedir)
 	if err != nil {
