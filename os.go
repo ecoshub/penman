@@ -170,11 +170,19 @@ func NewLine() string {
 }
 
 func PreProcess(dir string) string {
-	if strings.HasPrefix(strings.ToLower(dir), "desk") {
-		dir = strings.Replace(dir , "desk", GetDesktop(), -1)
-	}else if strings.HasPrefix(strings.ToLower(dir), "curr"){
-		dir = strings.Replace(dir , "curr", GetCurrentDir(), -1)
+	if dir == "" {
+		return dir
 	}
+	tokens := strings.Split(dir, Sep())
+	switch tokens[0] {
+	case "desk":
+		tokens[0] =  GetDesktop()
+	case "curr":
+		tokens[0] =  GetCurrentDir()
+	case "down":
+		tokens[0] =  GetDownloads()
+	}
+	dir = strings.Join(tokens, Sep())
 	return dir
 }
 
