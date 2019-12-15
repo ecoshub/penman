@@ -74,7 +74,7 @@ func SRead(dir string) string{
 	return string(Read(dir))
 }
 
-func ReadAt(dir string, offset int64, length int) string {
+func ReadAt(dir string, offset int64, length int) []byte {
 	dir = PreProcess(dir)
 	f, err := os.Open(dir)
 	if err != nil {
@@ -91,7 +91,7 @@ func ReadAt(dir string, offset int64, length int) string {
 	if err != nil {
 		fmt.Println("Read Error:", err)
 	}
-	return string(data)
+	return data
 }
 
 // Write
@@ -101,6 +101,7 @@ func ReadAt(dir string, offset int64, length int) string {
 // desk prefix not lower-upper key senstive
 // dir: desk\new_folder\new_text.txt is desktop directory
 func Write(dir string, buff []byte){
+	dir = PreProcess(dir)
 	newdir, newfile := SplitDir(dir)
 	err := os.MkdirAll(newdir, os.ModePerm)
 	if err != nil {
@@ -160,6 +161,7 @@ func SWriteln(dir string, data string){
 // desk prefix not lower-upper key senstive
 // dir: desk\new_folder\new_text.txt is desktop directory
 func OWrite(dir string, buff []byte){
+	dir = PreProcess(dir)
 	newdir, newfile := SplitDir(dir)
 	err := os.MkdirAll(newdir, os.ModePerm)
 	if err != nil {
@@ -171,6 +173,7 @@ func OWrite(dir string, buff []byte){
 
 
 func GetLineHas(dir, key string) (int64, int){
+	dir = PreProcess(dir)
 	file := SRead(dir)
 	tokens := strings.Split(file, NewLine())
 	count := int64(0)
@@ -185,6 +188,7 @@ func GetLineHas(dir, key string) (int64, int){
 }
 
 func GetLineHasAll(dir, key string) ([]int64, []int){
+	dir = PreProcess(dir)
 	file := SRead(dir)
 	tokens := strings.Split(file, NewLine())
 	count := int64(0)
@@ -202,6 +206,7 @@ func GetLineHasAll(dir, key string) ([]int64, []int){
 }
 
 func UpdateLine(dir, key , newval string){
+	dir = PreProcess(dir)
 	file := SRead(dir)
 	tokens := strings.Split(file, NewLine())
 	for i, v := range tokens{
@@ -214,6 +219,7 @@ func UpdateLine(dir, key , newval string){
 
 
 func UpdateLineWithOffset(dir string, offset int64, length int, newval string){
+	dir = PreProcess(dir)
 	file := SRead(dir)
 	tokens := strings.Split(file, NewLine())
 	count := int64(0)
@@ -228,6 +234,7 @@ func UpdateLineWithOffset(dir string, offset int64, length int, newval string){
 }
 
 func DeleteLineWithOffset(dir string, offset int64, length int){
+	dir = PreProcess(dir)
 	file := SRead(dir)
 	tokens := strings.Split(file, NewLine())
 	count := int64(0)
