@@ -9,12 +9,14 @@ import (
 	"path/filepath"
 )
 
-func DelFile(dir string) {
+func DelFile(dir string) bool{
 	_, filedir := SplitDir(dir)
 	err := os.RemoveAll(filedir)
 	if err != nil {
 		fmt.Printf("File Delete Error %v\n:", err)
+		return false
 	}
+	return true
 }
 
 func Rename(olddir string, newdir string){
