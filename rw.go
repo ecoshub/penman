@@ -1,77 +1,71 @@
 package penman
 
 import (
-	"fmt"
-	"os"
-	"io/ioutil"
-	"strings"
 	"bufio"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"strings"
 )
 
 type ReadLine struct {
-	Dir string
-	File *os.File
-	Open bool
-	Closed bool
-	Count int
-	Scan *bufio.Scanner
+	file   *os.File
+	active bool
+	offset int
+	scan   *bufio.Scanner
 }
 
 /*
 usage;
-rl := NewReadLine(dir)
+rl := Reader(dir)
 temp := rl.Next()
 for temp != nil {
 	fmt.Printf(temp)
 	temp = rl.Next()
 }
 */
-func NewReadLine(dir string) *ReadLine{
+
+func Reader(dir string) (*ReadLine, error) {
 	_, filedir := SplitDir(dir)
-	newReadLine := ReadLine{}
-	newReadLine.Dir = filedir
-	newReadLine.Count = 0
 	file, err := os.Open(filedir)
 	if err != nil {
-		fmt.Printf("File Open Error:%v\n", err)
+		return nil, err
 	}
-	newReadLine.File = file
-	newReadLine.Scan = bufio.NewScanner(file)
-	newReadLine.Open = true
-	newReadLine.Closed = false
-	return &newReadLine
+	rl := ReadLine{file: file, scan: bufio.NewScanner(file), active: true}
+	return &rl, nil
 }
 
-func(r * ReadLine) Next() []byte {
-	if r.Scan.Scan() {
-		temp := r.Scan.Bytes()
-		// fmt.Printf("**%v**\n", string(temp))
-		r.Count += len(temp) + len(NewLine())
-		return temp
-	}else{
-		r.Close()
+func (r *ReadLine) Next() []byte {
+	if !r.active {
+		return nil
 	}
-	return []byte{}
+	if r.scan.Scan() {
+		buffer := r.scan.Bytes()
+		r.offset += len(buffer) + len(NewLine())
+		return buffer
+	}
+	r.Close()
+	return nil
 }
 
-func(r * ReadLine) Close(){
-	r.Closed = true
-	r.File.Close()
+func (r *ReadLine) Close() {
+	r.active = false
+	r.file.Close()
 }
 
-func Read(dir string) []byte{
+func Read(dir string) []byte {
 	dir = PreProcess(dir)
 	_, filedir := SplitDir(dir)
 	buff, err := ioutil.ReadFile(filedir)
 	if err != nil {
 		fmt.Printf("Read File Error:%v\n", err)
-	}else{
+	} else {
 		return buff
 	}
 	return []byte{}
 }
 
-func SRead(dir string) string{
+func SRead(dir string) string {
 	return string(Read(dir))
 }
 
@@ -80,7 +74,7 @@ func ReadAt(dir string, offset int64, length int64) []byte {
 	f, err := os.Open(dir)
 	if err != nil {
 		fmt.Println("File Open Error:", err)
-	}else{
+	} else {
 		defer f.Close()
 	}
 	data := make([]byte, length)
@@ -101,17 +95,17 @@ func ReadAt(dir string, offset int64, length int64) []byte {
 // dir: curr\new_folder\new_text.txt is current directory
 // desk prefix not lower-upper key senstive
 // dir: desk\new_folder\new_text.txt is desktop directory
-func Write(dir string, buff []byte){
+func Write(dir string, buff []byte) {
 	dir = PreProcess(dir)
 	newdir, newfile := SplitDir(dir)
 	err := os.MkdirAll(newdir, os.ModePerm)
 	if err != nil {
 		fmt.Println("Make Directory Error:", err)
-	}else{
-		if IsFileExist(newfile){
+	} else {
+		if IsFileExist(newfile) {
 			// apppend
 			appendFile(newfile, buff)
-		}else{
+		} else {
 			// create
 			writeFile(newfile, buff)
 		}
@@ -120,7 +114,7 @@ func Write(dir string, buff []byte){
 
 // main write function
 func writeFile(filedir string, buffer []byte) {
-	err := ioutil.WriteFile(filedir, buffer, os.ModePerm)	
+	err := ioutil.WriteFile(filedir, buffer, os.ModePerm)
 	if err != nil {
 		fmt.Printf("File Write Error:%v\n", err)
 	}
@@ -138,21 +132,19 @@ func appendFile(filedir string, buff []byte) {
 	}
 }
 
-
 // string write
-func SWrite(dir string, data string){
+func SWrite(dir string, data string) {
 	Write(dir, []byte(data))
 }
 
 //string over write
-func SOWrite(dir string, data string){
+func SOWrite(dir string, data string) {
 	OWrite(dir, []byte(data))
 }
 
-
 // string writeln
-func SWriteln(dir string, data string){
-	Write(dir, []byte(data + NewLine()))
+func SWriteln(dir string, data string) {
+	Write(dir, []byte(data+NewLine()))
 }
 
 // ReWrite
@@ -161,25 +153,24 @@ func SWriteln(dir string, data string){
 // dir: curr\new_folder\new_text.txt is current directory
 // desk prefix not lower-upper key senstive
 // dir: desk\new_folder\new_text.txt is desktop directory
-func OWrite(dir string, buff []byte){
+func OWrite(dir string, buff []byte) {
 	dir = PreProcess(dir)
 	newdir, newfile := SplitDir(dir)
 	err := os.MkdirAll(newdir, os.ModePerm)
 	if err != nil {
 		fmt.Println("Make Directory Error:", err)
-	}else{
+	} else {
 		writeFile(newfile, buff)
 	}
 }
 
-
-func GetLineHas(dir, key string) (int64, int){
+func GetLineHas(dir, key string) (int64, int) {
 	dir = PreProcess(dir)
 	file := SRead(dir)
 	tokens := strings.Split(file, NewLine())
 	count := int64(0)
 	lennl := len(NewLine())
-	for _, v := range tokens{
+	for _, v := range tokens {
 		if strings.Contains(v, key) {
 			return int64(count), len(v)
 		}
@@ -188,15 +179,15 @@ func GetLineHas(dir, key string) (int64, int){
 	return int64(-1), 0
 }
 
-func GetLineHasAll(dir, key string) ([]int64, []int){
+func GetLineHasAll(dir, key string) ([]int64, []int) {
 	dir = PreProcess(dir)
 	file := SRead(dir)
 	tokens := strings.Split(file, NewLine())
 	count := int64(0)
 	lennl := len(NewLine())
-	offsets := make([]int64,0, 1024)
-	lens := make([]int,0, 1024)
-	for _, v := range tokens{
+	offsets := make([]int64, 0, 1024)
+	lens := make([]int, 0, 1024)
+	for _, v := range tokens {
 		if strings.Contains(v, key) {
 			offsets = append(offsets, int64(count))
 			lens = append(lens, len(v))
@@ -206,11 +197,11 @@ func GetLineHasAll(dir, key string) ([]int64, []int){
 	return offsets, lens
 }
 
-func UpdateLine(dir, key , newval string){
+func UpdateLine(dir, key, newval string) {
 	dir = PreProcess(dir)
 	file := SRead(dir)
 	tokens := strings.Split(file, NewLine())
-	for i, v := range tokens{
+	for i, v := range tokens {
 		if strings.Contains(v, key) {
 			tokens[i] = newval
 		}
@@ -218,15 +209,14 @@ func UpdateLine(dir, key , newval string){
 	SOWrite(dir, strings.Join(tokens, NewLine()))
 }
 
-
-func UpdateLineWithOffset(dir string, offset int64, length int, newval string){
+func UpdateLineWithOffset(dir string, offset int64, length int, newval string) {
 	dir = PreProcess(dir)
 	file := SRead(dir)
 	tokens := strings.Split(file, NewLine())
 	count := int64(0)
 	lennl := len(NewLine())
-	for i, v := range tokens{
-		if count == offset{
+	for i, v := range tokens {
+		if count == offset {
 			tokens[i] = newval
 		}
 		count += int64(len(v) + lennl)
@@ -234,17 +224,17 @@ func UpdateLineWithOffset(dir string, offset int64, length int, newval string){
 	SOWrite(dir, strings.Join(tokens, NewLine()))
 }
 
-func DeleteLineWithOffset(dir string, offset int64, length int){
+func DeleteLineWithOffset(dir string, offset int64, length int) {
 	dir = PreProcess(dir)
 	file := SRead(dir)
 	tokens := strings.Split(file, NewLine())
 	count := int64(0)
 	lennl := len(NewLine())
-	for i, v := range tokens{
-		if count == offset{
-			tokens[len(tokens) - 1], tokens[i] = tokens[i], tokens[len(tokens) - 1]
+	for i, v := range tokens {
+		if count == offset {
+			tokens[len(tokens)-1], tokens[i] = tokens[i], tokens[len(tokens)-1]
 		}
 		count += int64(len(v) + lennl)
 	}
-	SOWrite(dir, strings.Join(tokens[:len(tokens) - 1], NewLine()))
+	SOWrite(dir, strings.Join(tokens[:len(tokens)-1], NewLine()))
 }
